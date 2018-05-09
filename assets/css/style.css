@@ -1,0 +1,22 @@
+body{
+    background-color: #778899;
+}
+#buttonrow{
+    margin: 20px 0px 20px 0px;
+    /* padding: 0px; */
+    background-color: #778899;
+}
+.btn.btn-dark, .btn{
+    margin: 3px;
+}
+#downbelow{
+    /* width: 90%; */
+}
+#results-col{
+    /* margin-left: 10px; */
+    background-color: #4a6580;
+}
+#search{
+    /* margin: 20px; */
+    background-color: #778899;
+}
