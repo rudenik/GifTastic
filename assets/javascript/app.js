@@ -1,9 +1,16 @@
-topics = ["Tom Cruise", "Kurt Russell", "Michael Keaton", "Jack Nicholson", "Sharon Stone",
+var topics = ["Tom Cruise", "Kurt Russell", "Michael Keaton", "Jack Nicholson", "Sharon Stone",
     "Chrstopher Walken", "Harrison Ford", "Lea Thompson", "Geena Davis", "Goldie Hawn",
     "Sigourney Weaver", "Jennifer Jason Leigh", "Jennifer Connelly", "Kim Basinger",
     "Phoebe Cates", "Kathleen Turner"];
 
-cities = [{
+var moviesList = ["Inception", "Fight Club", "Office Space", "Seven", "Memento", "Captain America",
+    "Cabin in the Woods", "Back to the Future", "The Breakfast Club", "Ghostbusters",
+    "Ferris Bueller's Day Off", "The Goonies", "Aliens", "The Empire Strikes Back",
+    "Die Hard", "Top Gun", "Stand by Me", "Raiders of the Lost Ark", "Gremlins", "The Terminator", "Sixteen Candles", "Pretty in Pink",
+    "Fast Times at Ridgemont High", "Weird Science", "Heathers", "Blade Runner", "Dirty Dancing", "Beetlejuice", "The Princess Bride",
+    "The Shining"];
+
+var cities = [{
     "city": "Toronto",
     "country": "CA"
 },
@@ -97,13 +104,18 @@ function makeRequest(term) {
                     cardTextHTML = "<b>Rating: </b>" + resp["data"][elements].rating;
                     cardTextHTML += "<br><b>Title: </b>" + resp["data"][elements].title;
                     cardText.html(cardTextHTML);
-                    console.log(resp["data"][elements]["images"].fixed_width["url"]);
+                    // console.log(resp["data"][elements]["images"].fixed_width["url"]);
                     var imageToAdd = $("<img>")
-                    imageToAdd.attr("src", resp["data"][elements]["images"].fixed_width_still["url"]).attr("data-animated", resp["data"][elements]["images"].fixed_width["url"]);//add alt attribute
+                    imageToAdd.attr("src", resp["data"][elements]["images"].fixed_width_still["url"]).attr("data-animated", resp["data"][elements]["images"].fixed_width["url"]).attr("alt", "still image for gif " + resp["data"][elements].title);
                     imageToAdd.addClass("card-img-bottom");
+                    var dlButton = $("<button>");
+                    dlButton.text("Download");
+                    dlButton.attr("id", "dlbutton").addClass("btn btn-outline-secondary");
+                    
                     cardBody.append(cardText);
                     cardBody.append(imageToAdd);
                     cardDiv.append(cardBody)
+                    dlButton.appendTo(cardDiv);
                     cardDiv.appendTo($("#results-col"));
                 }
             })
@@ -197,7 +209,44 @@ function makeRequest(term) {
             console.log(weatherArray);
             break;
         case "OMDB":
+            var movieResults = [];
 
+            $.ajax({
+                url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&s=" + term,
+                method: "GET"
+            }).then(function (resp) {
+                console.log(resp);
+                console.log(resp["Search"]);
+                for (results in resp["Search"]) {
+                    if (resp["Search"][results]["Poster"] == "N/A") {
+                        console.log("No Poster for: " + resp["Search"][results]["Title"]);
+                    } else {
+                        var movieObj = {
+                            title: resp["Search"][results]["Title"],
+                            year: resp["Search"][results]["Year"],
+                            poster: resp["Search"][results]["Poster"]
+                        }
+                        movieResults.push(movieObj);
+                    }
+
+                }
+                for (posMov in movieResults) {
+                    var cardDiv = $("<div>");
+                    cardDiv.addClass("card");
+                    cardDiv.attr("style", "max-width: 18rem").attr("id", "moviecard").attr("data-movie", movieResults[posMov].title).attr("data-poster", movieResults[posMov].poster);
+                    var cardHeader = $("<div>");
+                    cardHeader.addClass("card-header");
+                    cardHeader.html("<b>Title: </b>" + movieResults[posMov].title + "<br>Year: " + movieResults[posMov].year);
+                    cardHeader.appendTo(cardDiv);
+                    var imageToAdd = $("<img>");
+                    imageToAdd.attr("src", movieResults[posMov].poster).attr("alt", movieResults[posMov].title + " Poster");
+                    imageToAdd.addClass("card-img-bottom");
+                    cardDiv.append(imageToAdd);
+                    cardDiv.appendTo($("#results-col"));
+                }
+
+
+            });
             break;
     }
 
@@ -209,7 +258,7 @@ $(".btn-group").on("click", "input", function () {
     $(this).parent().addClass("active").siblings().removeClass('active');
     if (thisID == "OMDB") {
         selectedAPI = "OMDB";
-        drawButtons(topics);
+        drawButtons(moviesList);
         $('body').css('background-color', '#DAA520');
         $('#buttonrow').css('background-color', '#DAA520');
         $('#search').css('background-color', '#DAA520');
@@ -255,23 +304,69 @@ $("#add-topic").on("click", function (event) {
             drawButtons(cities);
             break;
     }
-    
+
     $("#topic-input").val("");
 })
 $(".container-fluid").on("click", ".card-img-bottom", function () {
-    console.log($(this).attr("data-animated"));
-    if (!$(this).attr('data-still')) {
-        console.log("not: data-still")
-        console.log("src: " + $(this).attr('src'));
-        var stillSrc = $(this).attr('src');
-        $(this).attr("data-still", stillSrc);
-        $(this).attr("src", $(this).attr('data-animated'));
+    if (selectedAPI == "Giphy") {
+        console.log($(this).attr("data-animated"));
+        if (!$(this).attr('data-still')) {
+            console.log("not: data-still")
+            console.log("src: " + $(this).attr('src'));
+            var stillSrc = $(this).attr('src');
+            $(this).attr("data-still", stillSrc);
+            $(this).attr("src", $(this).attr('data-animated'));
 
-    } else {
-        console.log("else")
-        console.log("data-still: " + $(this).attr('data-still'));
-        $(this).attr('src', $(this).attr('data-still'));
+        } else {
+            console.log("else")
+            console.log("data-still: " + $(this).attr('data-still'));
+            $(this).attr('src', $(this).attr('data-still'));
 
+        }
+        console.log($(this));
     }
-    console.log($(this));
+})
+$(".container-fluid").on("click", "#moviecard", function () {
+    console.log("Movie Card");
+    console.log($(this).attr("data-movie"));
+    var term = encodeURI($(this).attr("data-movie"));
+    var actors;
+    var awards;
+    var thisCard = $(this)
+    console.log($(this).children()[1]);
+
+    //add the image back if it isn't there. 
+
+    $.ajax({
+        url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&t=" + term,
+        method: "GET"
+    }).then(function (resp) {
+        console.log(resp);
+
+        actors = resp["Actors"];
+        console.log(actors);
+        awards = resp["Awards"];
+        thisCard.children()[1].remove();
+        var cardText = $("<p>");
+        cardText.addClass("card-text");
+        cardText.html("<b>Actors: </b>" + actors + "<br><b>Awards: </b>" + awards);
+        thisCard.append(cardText);
+
+    })
+})
+$(".container-fluid").on("click", ".btn-outline-secondary", function(){
+    console.log($(this).siblings().attr("data-animated"))
+    downloadFile($(this).siblings().attr("data-animated"));
+
+
+    //
+//     var link = document.createElement("a");
+//   link.download = name;
+//   link.href = uri;
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+//   delete link;
+// }
+
 })
