@@ -54,9 +54,9 @@ drawButtons(topics);
 function drawButtons(array) {
     console.log("drawbuttonsFN()")
     $("#buttonrow").empty();
-    
+
     for (element in array) {
-        if (selectedAPI=="Giphy"||selectedAPI=="OMDB") {
+        if (selectedAPI == "Giphy" || selectedAPI == "OMDB") {
             var button = $("<button>");
             button.text(array[element]);
             button.addClass("btn btn-dark");
@@ -117,29 +117,32 @@ function makeRequest(term) {
             break;
         case "Weather":
             console.log(term);
-            var weatherObj = {
-                dateTime: "",
-                temp: "",
-                pressure: ""
-            }
+
             var weatherArray = [];
-            
+
             $.ajax({
                 url: "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&units=metric&q=" + term,
                 method: "GET"
             }).then(function (resp) {
                 console.log(resp["list"]);
                 console.log(resp);
-                
+
                 for (elements in resp["list"]) {
-                    var nextWO = new weatherObj;
-                    nextWO.dateTime=resp["list"][elements].dt_txt;
-                    nextWO.temp=resp["list"][elements]["main"].temp;
-                    nextWO.pressure=resp["list"][elements]["main"].pressure;
-                    console.log(resp["list"][elements].dt_txt);
-                    console.log(resp["list"][elements]["main"].temp);
-                    console.log(resp["list"][elements]["main"].pressure);
-                    weatherArray.push(nextWO);
+
+                    var weatherObj = {
+                        dateTime: resp["list"][elements].dt_txt,
+                        temp: resp["list"][elements]["main"].temp,
+                        pressure: resp["list"][elements]["main"].pressure
+                    }
+                    weatherArray.push(weatherObj);
+
+                    // nextWO.dateTime=;
+                    // nextWO.temp=
+                    // nextWO.pressure=;
+                    // console.log(resp["list"][elements].dt_txt);
+                    // console.log(resp["list"][elements]["main"].temp);
+                    // console.log(resp["list"][elements]["main"].pressure);
+                    // weatherArray.push(nextWO);
 
 
 
@@ -149,21 +152,88 @@ function makeRequest(term) {
                     // var cardBody = $("<div>");
                     // cardBody.addClass("card-body")
                     // var 
-                //     var cardText = $("<p>");
-                //     cardText.addClass("card-text");
-                //     cardTextHTML = "<b>Rating: </b>" + resp["data"][elements].rating;
-                //     cardTextHTML += "<br><b>Title: </b>" + resp["data"][elements].title;
-                //     cardText.html(cardTextHTML);
-                //     console.log(resp["data"][elements]["images"].fixed_width["url"]);
-                //     var imageToAdd = $("<img>")
-                //     imageToAdd.attr("src", resp["data"][elements]["images"].fixed_width_still["url"]).attr("data-animated", resp["data"][elements]["images"].fixed_width["url"]);//add alt attribute
-                //     imageToAdd.addClass("card-img-bottom");
-                //     cardBody.append(cardText);
-                //     cardBody.append(imageToAdd);
-                //     cardDiv.append(cardBody)
-                //     cardDiv.appendTo($("#results-col"));
-                // imageToAdd.appendTo($("#results-col"));
+                    //     var cardText = $("<p>");
+                    //     cardText.addClass("card-text");
+                    //     cardTextHTML = "<b>Rating: </b>" + resp["data"][elements].rating;
+                    //     cardTextHTML += "<br><b>Title: </b>" + resp["data"][elements].title;
+                    //     cardText.html(cardTextHTML);
+                    //     console.log(resp["data"][elements]["images"].fixed_width["url"]);
+                    //     var imageToAdd = $("<img>")
+                    //     imageToAdd.attr("src", resp["data"][elements]["images"].fixed_width_still["url"]).attr("data-animated", resp["data"][elements]["images"].fixed_width["url"]);//add alt attribute
+                    //     imageToAdd.addClass("card-img-bottom");
+                    //     cardBody.append(cardText);
+                    //     cardBody.append(imageToAdd);
+                    //     cardDiv.append(cardBody)
+                    //     cardDiv.appendTo($("#results-col"));
+                    // imageToAdd.appendTo($("#results-col"));
                 }
+                var now = Date();
+                console.log(now);
+                console.log(now.substring(8, 10));
+                console.log(weatherArray[1].dateTime.substring(8, 10));
+                var dateNowNumber = parseInt(now.substring(8, 10));
+                var day1 = [];
+                var day2 = [];
+                var day3 = [];
+                var day4 = [];
+                var day5 = [];
+                var day6 = [];
+                for (dates in weatherArray) {
+                    var arrayDateNumber = parseInt(weatherArray[dates].dateTime.substring(8, 10));
+                    if (dateNowNumber == arrayDateNumber) {
+                        console.log("day 1");
+                        day1.push(weatherArray[dates]);
+                    } else if (dateNowNumber + 1 == arrayDateNumber) {
+                        console.log("day 2")
+                        day2.push(weatherArray[dates]);
+                    } else if (dateNowNumber + 2 == arrayDateNumber) {
+                        console.log("day 3")
+                        day3.push(weatherArray[dates]);
+
+                    } else if (dateNowNumber + 3 == arrayDateNumber) {
+                        console.log("day 4")
+                        day4.push(weatherArray[dates]);
+                    } else if (dateNowNumber + 4 == arrayDateNumber) {
+                        console.log("day 5")
+                        day5.push(weatherArray[dates]);
+                    } else if (dateNowNumber + 5 == arrayDateNumber) {
+                        console.log("day 5")
+                        day6.push(weatherArray[dates]);
+                    } else {
+                        console.log("you counted wrong");
+                    }
+                    
+                }
+                var dayArray = [day1, day2, day3, day4, day5, day6];
+                for (DA in dayArray){
+                    if(dayArray[DA].length==0){
+                        console.log("empty Day");
+                    }else{
+                        var cardDiv = $("<div>");
+                        cardDiv.addClass("card");
+                        cardDiv.attr("style", "max-width: 18rem");
+                        var cardHeader= $("<div>");
+                        cardHeader.addClass("card-header");
+                        console.log(dayArray[DA][0].dateTime.substring(0,11));
+                        cardHeader.html("<b>"+dayArray[DA][0].dateTime.substring(0,11)+"</b>");
+                        cardHeader.appendTo(cardDiv);
+                        var tempList = $("<ul>")
+                        tempList.addClass("list-group list-group-flush");
+                        for (ele in dayArray[DA]){
+                            var listItem = $("<li>")
+                            listItem.addClass("list-group-item");
+                            console.log(dayArray[DA][ele].temp)
+                            listItem.html("Temp: " + dayArray[DA][ele].temp + "<br>Time: " + dayArray[DA][ele].dateTime.substring(10,16) + "<br>Pressure: " + dayArray[DA][ele].pressure)
+                            listItem.appendTo(tempList);    
+                        }   
+                        tempList.appendTo(cardDiv);   
+                        cardDiv.appendTo($("#results-col"));
+                    
+                        }
+                    }
+
+                
+                console.log(day1);
 
             })
             console.log(weatherArray);
@@ -222,16 +292,16 @@ $("#add-topic").on("click", function (event) {
     event.preventDefault();
     var topic = $("#topic-input").val().trim();
     console.log("Added Topic: " + topic);
-    switch (selectedAPI){
+    switch (selectedAPI) {
         case "Giphy":
         case "OMDB":
-        topics.push(topic);
-        drawButtons(topics);
-        break;
+            topics.push(topic);
+            drawButtons(topics);
+            break;
         case "Weather":
-        cities.push({"city":topic,"country":""});
-        drawButtons(cities);
-        break;
+            cities.push({ "city": topic, "country": "" });
+            drawButtons(cities);
+            break;
     }
     // topics.push(topic);
     // drawButtons(topics);
