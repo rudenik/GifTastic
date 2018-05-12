@@ -47,14 +47,13 @@ var queryTerm = "";
 var weatherAPIKey = "dcfef77b1fe26edc9d499d914dee01c8";
 var weatherQueryURL = "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&q=";
 var selectedAPI = "Giphy"
+var omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&"
 
 drawButtons(topics);
-
 
 function drawButtons(array) {
     console.log("drawbuttonsFN()")
     $("#buttonrow").empty();
-
     for (element in array) {
         if (selectedAPI == "Giphy" || selectedAPI == "OMDB") {
             var button = $("<button>");
@@ -62,18 +61,14 @@ function drawButtons(array) {
             button.addClass("btn btn-dark");
             button.attr("id", "querybutton");
             $("#buttonrow").append(button);
-        } else {//if (isObject(element)){
+        } else {
             console.log("if statement else for drawbutton")
             var button = $("<button>");
             button.text(array[element].city);
             button.addClass("btn btn-dark");
             button.attr("id", "querybutton").attr("data-city", array[element]);
-            // var dataCity = $(button.attr("data-city"));
-            // console.log("Attr, data-city: " + dataCity);
             $("#buttonrow").append(button);
-
         }
-
     }
 }
 function setQueryTerm(term) {
@@ -91,11 +86,10 @@ function makeRequest(term) {
             }).then(function (resp) {
                 console.log(resp["data"]);
                 console.log(resp);
-
                 for (elements in resp["data"]) {
                     var cardDiv = $("<div>");
                     cardDiv.addClass("card");
-                    cardDiv.attr("style", "max-width: 18rem");//.attr("data-animated", resp["data"][elements]["images"].fixed_width);
+                    cardDiv.attr("style", "max-width: 18rem");
                     var cardBody = $("<div>");
                     cardBody.addClass("card-body").attr("id", "clickToGif").attr("data-animated", resp["data"][elements]["images"].fixed_width["url"]);
                     var cardText = $("<p>");
@@ -111,61 +105,25 @@ function makeRequest(term) {
                     cardBody.append(imageToAdd);
                     cardDiv.append(cardBody)
                     cardDiv.appendTo($("#results-col"));
-                    // imageToAdd.appendTo($("#results-col"));
                 }
             })
             break;
         case "Weather":
             console.log(term);
-
             var weatherArray = [];
-
             $.ajax({
                 url: "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&units=metric&q=" + term,
                 method: "GET"
             }).then(function (resp) {
                 console.log(resp["list"]);
                 console.log(resp);
-
                 for (elements in resp["list"]) {
-
                     var weatherObj = {
                         dateTime: resp["list"][elements].dt_txt,
                         temp: resp["list"][elements]["main"].temp,
                         pressure: resp["list"][elements]["main"].pressure
                     }
                     weatherArray.push(weatherObj);
-
-                    // nextWO.dateTime=;
-                    // nextWO.temp=
-                    // nextWO.pressure=;
-                    // console.log(resp["list"][elements].dt_txt);
-                    // console.log(resp["list"][elements]["main"].temp);
-                    // console.log(resp["list"][elements]["main"].pressure);
-                    // weatherArray.push(nextWO);
-
-
-
-                    // var cardDiv = $("<div>");
-                    // cardDiv.addClass("card");
-                    // cardDiv.attr("style", "max-width: 18rem");
-                    // var cardBody = $("<div>");
-                    // cardBody.addClass("card-body")
-                    // var 
-                    //     var cardText = $("<p>");
-                    //     cardText.addClass("card-text");
-                    //     cardTextHTML = "<b>Rating: </b>" + resp["data"][elements].rating;
-                    //     cardTextHTML += "<br><b>Title: </b>" + resp["data"][elements].title;
-                    //     cardText.html(cardTextHTML);
-                    //     console.log(resp["data"][elements]["images"].fixed_width["url"]);
-                    //     var imageToAdd = $("<img>")
-                    //     imageToAdd.attr("src", resp["data"][elements]["images"].fixed_width_still["url"]).attr("data-animated", resp["data"][elements]["images"].fixed_width["url"]);//add alt attribute
-                    //     imageToAdd.addClass("card-img-bottom");
-                    //     cardBody.append(cardText);
-                    //     cardBody.append(imageToAdd);
-                    //     cardDiv.append(cardBody)
-                    //     cardDiv.appendTo($("#results-col"));
-                    // imageToAdd.appendTo($("#results-col"));
                 }
                 var now = Date();
                 console.log(now);
@@ -202,38 +160,38 @@ function makeRequest(term) {
                     } else {
                         console.log("you counted wrong");
                     }
-                    
+
                 }
+                /* Look into the resp to see if theres icon for weather 
+                    add a title to show which city you searched for.
+                */
                 var dayArray = [day1, day2, day3, day4, day5, day6];
-                for (DA in dayArray){
-                    if(dayArray[DA].length==0){
+                for (DA in dayArray) {
+                    if (dayArray[DA].length == 0) {
                         console.log("empty Day");
-                    }else{
+                    } else {
                         var cardDiv = $("<div>");
                         cardDiv.addClass("card");
                         cardDiv.attr("style", "max-width: 18rem");
-                        var cardHeader= $("<div>");
+                        var cardHeader = $("<div>");
                         cardHeader.addClass("card-header");
-                        console.log(dayArray[DA][0].dateTime.substring(0,11));
-                        cardHeader.html("<b>"+dayArray[DA][0].dateTime.substring(0,11)+"</b>");
+                        console.log(dayArray[DA][0].dateTime.substring(0, 11));
+                        cardHeader.html("<b>" + dayArray[DA][0].dateTime.substring(0, 11) + "</b>");
                         cardHeader.appendTo(cardDiv);
                         var tempList = $("<ul>")
                         tempList.addClass("list-group list-group-flush");
-                        for (ele in dayArray[DA]){
+                        for (ele in dayArray[DA]) {
                             var listItem = $("<li>")
                             listItem.addClass("list-group-item");
                             console.log(dayArray[DA][ele].temp)
-                            listItem.html("Temp: " + dayArray[DA][ele].temp + "<br>Time: " + dayArray[DA][ele].dateTime.substring(10,16) + "<br>Pressure: " + dayArray[DA][ele].pressure)
-                            listItem.appendTo(tempList);    
-                        }   
-                        tempList.appendTo(cardDiv);   
-                        cardDiv.appendTo($("#results-col"));
-                    
+                            listItem.html("Time: " + dayArray[DA][ele].dateTime.substring(10, 16) + "<br>Temp: " + dayArray[DA][ele].temp + "<br>Pressure: " + dayArray[DA][ele].pressure)
+                            listItem.appendTo(tempList);
                         }
-                    }
+                        tempList.appendTo(cardDiv);
+                        cardDiv.appendTo($("#results-col"));
 
-                
-                console.log(day1);
+                    }
+                }
 
             })
             console.log(weatherArray);
@@ -245,23 +203,19 @@ function makeRequest(term) {
 
 }
 $(".btn-group").on("click", "input", function () {
-    // $(".btn").button('toggle');
     console.log($(this).attr("id"));
-    // console.log($(this).find('input').attr('id'))
     var thisID = $(this).attr("id");
 
     $(this).parent().addClass("active").siblings().removeClass('active');
     if (thisID == "OMDB") {
-        //queryURL=
-        //apiKey=
         selectedAPI = "OMDB";
+        drawButtons(topics);
         $('body').css('background-color', '#DAA520');
         $('#buttonrow').css('background-color', '#DAA520');
         $('#search').css('background-color', '#DAA520');
         $('#results-col').css('background-color', '#c19d43');
     }
     if (thisID == "Weather") {
-        //load city topics
         selectedAPI = "Weather";
         drawButtons(cities);
         $('body').css('background-color', '#639118');
@@ -271,7 +225,7 @@ $(".btn-group").on("click", "input", function () {
     }
     if (thisID == "Giphy") {
         selectedAPI = "Giphy";
-
+        drawButtons(topics);
         $('body').css('background-color', '#778899');
         $('#buttonrow').css('background-color', '#778899');
         $('#search').css('background-color', '#778899');
@@ -283,8 +237,6 @@ $("#buttonrow").on("click", "#querybutton", function () {
     var queryTerm = encodeURI($(this).text());
     console.log("On Click of querybutton, queryTerm: " + queryTerm);
     setQueryTerm(queryTerm);
-    // console.log(giphyAPIKey+ " queryURL: " + giphyQueryURL +" term: " +queryTerm)
-    // makeRequest(giphyAPIKey, giphyQueryURL, queryTerm);
     makeRequest(queryTerm);
 
 })
@@ -303,12 +255,11 @@ $("#add-topic").on("click", function (event) {
             drawButtons(cities);
             break;
     }
-    // topics.push(topic);
-    // drawButtons(topics);
+    
     $("#topic-input").val("");
 })
 $(".container-fluid").on("click", ".card-img-bottom", function () {
-    console.log($(this).attr("data-animated"));//.attributes["data-animated"]);
+    console.log($(this).attr("data-animated"));
     if (!$(this).attr('data-still')) {
         console.log("not: data-still")
         console.log("src: " + $(this).attr('src'));
@@ -319,12 +270,8 @@ $(".container-fluid").on("click", ".card-img-bottom", function () {
     } else {
         console.log("else")
         console.log("data-still: " + $(this).attr('data-still'));
-        //var animatedSrc = $(this).attr('data-animated');
         $(this).attr('src', $(this).attr('data-still'));
 
     }
-    // var stillSrc = $(this).attr('src');
-    // $(this).attr("src", $(this).attr('data-animated'));
-    // $(this).attr("data-still", stillSrc);
-    console.log($(this));//" //> ".card-img-bottom"));//.children("card-img-bottom"));
+    console.log($(this));
 })
