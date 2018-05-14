@@ -53,8 +53,9 @@ var giphyQueryURL = "https://api.giphy.com/v1/gifs/search?";// + "&api_key=" + g
 var queryTerm = "";
 var weatherAPIKey = "dcfef77b1fe26edc9d499d914dee01c8";
 var weatherQueryURL = "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&q=";
-var selectedAPI = "Giphy"
-var omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&"
+var selectedAPI = "Giphy";
+var offset = 0;
+var omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&";
 
 drawButtons(topics);
 
@@ -82,13 +83,18 @@ function setQueryTerm(term) {
     queryTerm = term;
 }
 function makeRequest(term) {
-    $("#results-col").empty();
+    
     // var giphyQueryURL
     switch (selectedAPI) {
         case "Giphy":
+            var searchTermDiv = $("<div>");
+            searchTermDiv.addClass("card");
+            searchTermDiv.attr("id", "searchtermdiv");
+            searchTermDiv.html("<b>Here are the results for " + queryTerm + " on Giphy</b>");
+            searchTermDiv.prependTo($("#results-col"));
             //Giphy example URL //  https://api.giphy.com/v1/gifs/search?api_key=" + apikey + "&q=" + term + "&limit=10&offset=0&lang=en
             $.ajax({
-                url: giphyQueryURL + "api_key=" + giphyAPIKey + "&q=" + term + "&limit=10&offset=0&lang=en",//queryURL+term+"&api_key="+apikey+"&limit=10&lang=en&offset=0&rating=Y",
+                url: giphyQueryURL + "api_key=" + giphyAPIKey + "&q=" + term + "&limit=10&offset="+offset+"&lang=en",//queryURL+term+"&api_key="+apikey+"&limit=10&lang=en&offset=0&rating=Y",
                 method: "GET"
             }).then(function (resp) {
                 console.log(resp["data"]);
@@ -111,18 +117,30 @@ function makeRequest(term) {
                     var dlButton = $("<button>");
                     dlButton.text("Download");
                     dlButton.attr("id", "dlbutton").addClass("btn btn-outline-secondary");
-                    
+
                     cardBody.append(cardText);
                     cardBody.append(imageToAdd);
                     cardDiv.append(cardBody)
                     dlButton.appendTo(cardDiv);
                     cardDiv.appendTo($("#results-col"));
                 }
+                var pageButton = $("<button>");
+                pageButton.text("Next 10");
+                pageButton.attr("id", "nextpage");
+                //Style this button with a class. 
+                pageButton.appendTo("#results-col");
+
             })
             break;
         case "Weather":
+        $("#results-col").empty();
             console.log(term);
             var weatherArray = [];
+            var searchTermDiv = $("<div>");
+            searchTermDiv.addClass("card");
+            searchTermDiv.attr("id", "searchtermdiv");
+            searchTermDiv.html("<b>Here is the five day forcast for " + queryTerm + "</b>");
+            searchTermDiv.prependTo($("#results-col"));
             $.ajax({
                 url: "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&units=metric&q=" + term,
                 method: "GET"
@@ -133,8 +151,10 @@ function makeRequest(term) {
                     var weatherObj = {
                         dateTime: resp["list"][elements].dt_txt,
                         temp: resp["list"][elements]["main"].temp,
-                        pressure: resp["list"][elements]["main"].pressure
+                        pressure: resp["list"][elements]["main"].pressure,
+                        icon: "https://openweathermap.org/img/w/" + resp["list"][elements]["weather"][0].icon + ".png"
                     }
+                    // console.log("WeatherIcon: " + resp["list"][elements]["weather"][0].icon);
                     weatherArray.push(weatherObj);
                 }
                 var now = Date();
@@ -174,9 +194,7 @@ function makeRequest(term) {
                     }
 
                 }
-                /* Look into the resp to see if theres icon for weather 
-                    add a title to show which city you searched for.
-                */
+
                 var dayArray = [day1, day2, day3, day4, day5, day6];
                 for (DA in dayArray) {
                     if (dayArray[DA].length == 0) {
@@ -196,8 +214,11 @@ function makeRequest(term) {
                             var listItem = $("<li>")
                             listItem.addClass("list-group-item");
                             console.log(dayArray[DA][ele].temp)
-                            listItem.html("Time: " + dayArray[DA][ele].dateTime.substring(10, 16) + "<br>Temp: " + dayArray[DA][ele].temp + "<br>Pressure: " + dayArray[DA][ele].pressure)
+                            listItem.html("<br>Time: " + dayArray[DA][ele].dateTime.substring(10, 16) + "<br>Temp: " + dayArray[DA][ele].temp + "<br>Pressure: " + dayArray[DA][ele].pressure)
                             listItem.appendTo(tempList);
+                            var weatherIcon = $('<img>');
+                            weatherIcon.attr("src", dayArray[DA][ele].icon);
+                            weatherIcon.prependTo(listItem);
                         }
                         tempList.appendTo(cardDiv);
                         cardDiv.appendTo($("#results-col"));
@@ -209,7 +230,13 @@ function makeRequest(term) {
             console.log(weatherArray);
             break;
         case "OMDB":
+        $("#results-col").empty();
             var movieResults = [];
+            var searchTermDiv = $("<div>");
+            searchTermDiv.addClass("card");
+            searchTermDiv.attr("id", "searchtermdiv");
+            searchTermDiv.html("<b>Here are the results for " + queryTerm + " on OMDB</b>");
+            searchTermDiv.prependTo($("#results-col"));
 
             $.ajax({
                 url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&s=" + term,
@@ -233,7 +260,7 @@ function makeRequest(term) {
                 for (posMov in movieResults) {
                     var cardDiv = $("<div>");
                     cardDiv.addClass("card");
-                    cardDiv.attr("style", "max-width: 18rem").attr("id", "moviecard").attr("data-movie", movieResults[posMov].title).attr("data-poster", movieResults[posMov].poster);
+                    cardDiv.attr("style", "max-width: 18rem").attr("id", "moviecard").attr("data-movie", movieResults[posMov].title).attr("data-poster", movieResults[posMov].poster).attr("data-poster-showing", "true");
                     var cardHeader = $("<div>");
                     cardHeader.addClass("card-header");
                     cardHeader.html("<b>Title: </b>" + movieResults[posMov].title + "<br>Year: " + movieResults[posMov].year);
@@ -254,7 +281,7 @@ function makeRequest(term) {
 $(".btn-group").on("click", "input", function () {
     console.log($(this).attr("id"));
     var thisID = $(this).attr("id");
-
+    offset = 0;
     $(this).parent().addClass("active").siblings().removeClass('active');
     if (thisID == "OMDB") {
         selectedAPI = "OMDB";
@@ -282,12 +309,20 @@ $(".btn-group").on("click", "input", function () {
     }
 })
 $("#buttonrow").on("click", "#querybutton", function () {
-
-    var queryTerm = encodeURI($(this).text());
-    console.log("On Click of querybutton, queryTerm: " + queryTerm);
+    queryTerm = $(this).text();
+    var queryTermEncoded = encodeURI($(this).text());
+    console.log("On Click of querybutton, queryTerm: " + queryTermEncoded);
     setQueryTerm(queryTerm);
-    makeRequest(queryTerm);
+    makeRequest(queryTermEncoded);
 
+})
+$(".container-fluid").on("click", "#nextpage", function(){
+    console.log("next 10 Pressed");
+    offset+=10;
+    var queryTermEncoded = encodeURI(queryTerm);
+    makeRequest(queryTermEncoded);
+    $("#searchtermdiv").remove();
+    $(this).remove();
 })
 $("#add-topic").on("click", function (event) {
     event.preventDefault();
@@ -295,9 +330,11 @@ $("#add-topic").on("click", function (event) {
     console.log("Added Topic: " + topic);
     switch (selectedAPI) {
         case "Giphy":
-        case "OMDB":
             topics.push(topic);
             drawButtons(topics);
+        case "OMDB":
+            moviesList.push(topic);
+            drawButtons(moviesList);
             break;
         case "Weather":
             cities.push({ "city": topic, "country": "" });
@@ -334,39 +371,55 @@ $(".container-fluid").on("click", "#moviecard", function () {
     var awards;
     var thisCard = $(this)
     console.log($(this).children()[1]);
+    console.log("poster-showing: " + $(this).attr("data-poster-showing"));
+    
+    if ($(this).attr("data-poster-showing") == "true") {
 
-    //add the image back if it isn't there. 
+        $.ajax({
+            url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&t=" + term,
+            method: "GET"
+        }).then(function (resp) {
+            console.log(resp);
+            actors = resp["Actors"];
+            console.log(actors);
+            awards = resp["Awards"];
+            thisCard.attr("data-movie-info", actors);
+            thisCard.attr("data-poster-showing", "false");
+            thisCard.children()[1].remove();
+            var cardText = $("<p>");
+            cardText.addClass("card-text");
+            cardText.html("<b>Actors: </b>" + actors + "<br><b>Awards: </b>" + awards);
+            thisCard.append(cardText);
+            console.log(thisCard);
 
-    $.ajax({
-        url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&t=" + term,
-        method: "GET"
-    }).then(function (resp) {
-        console.log(resp);
+        })
+    } else {
 
-        actors = resp["Actors"];
-        console.log(actors);
-        awards = resp["Awards"];
+        console.log("my else, that doesnt look like it's being called");
         thisCard.children()[1].remove();
-        var cardText = $("<p>");
-        cardText.addClass("card-text");
-        cardText.html("<b>Actors: </b>" + actors + "<br><b>Awards: </b>" + awards);
-        thisCard.append(cardText);
+        var imageToAdd = $("<img>");
+        imageToAdd.attr("src", thisCard.attr("data-poster"));
+        imageToAdd.addClass("card-img-bottom");
+        thisCard.attr("data-poster-showing", "true");
+        thisCard.append(imageToAdd);
+    }
 
-    })
+
+
 })
-$(".container-fluid").on("click", ".btn-outline-secondary", function(){
+$(".container-fluid").on("click", ".btn-outline-secondary", function () {
     console.log($(this).siblings().attr("data-animated"))
     downloadFile($(this).siblings().attr("data-animated"));
 
 
     //
-//     var link = document.createElement("a");
-//   link.download = name;
-//   link.href = uri;
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-//   delete link;
-// }
+    //     var link = document.createElement("a");
+    //   link.download = name;
+    //   link.href = uri;
+    //   document.body.appendChild(link);
+    //   link.click();
+    //   document.body.removeChild(link);
+    //   delete link;
+    // }
 
 })

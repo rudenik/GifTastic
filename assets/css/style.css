@@ -27,6 +27,11 @@ body{
     display:inline-block;
     margin: 5px;
 }
+.card#searchtermdiv{
+    padding: 5px;
+    display:block;
+    margin: 10px 5px 5px 5px;
+}
 .container-fluid{
     width: 95%;
 }
