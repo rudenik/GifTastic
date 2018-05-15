@@ -60,7 +60,6 @@ var omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&";
 drawButtons(topics);
 
 function drawButtons(array) {
-    console.log("drawbuttonsFN()")
     $("#buttonrow").empty();
     for (element in array) {
         if (selectedAPI == "Giphy" || selectedAPI == "OMDB") {
@@ -70,7 +69,6 @@ function drawButtons(array) {
             button.attr("id", "querybutton");
             $("#buttonrow").append(button);
         } else {
-            console.log("if statement else for drawbutton")
             var button = $("<button>");
             button.text(array[element].city);
             button.addClass("btn btn-dark");
@@ -82,9 +80,10 @@ function drawButtons(array) {
 function setQueryTerm(term) {
     queryTerm = term;
 }
-function makeRequest(term) {
-    
-    // var giphyQueryURL
+function makeRequest(term, oset) {
+    if (oset == 0) {
+        $("#results-col").empty();
+    }
     switch (selectedAPI) {
         case "Giphy":
             var searchTermDiv = $("<div>");
@@ -94,11 +93,9 @@ function makeRequest(term) {
             searchTermDiv.prependTo($("#results-col"));
             //Giphy example URL //  https://api.giphy.com/v1/gifs/search?api_key=" + apikey + "&q=" + term + "&limit=10&offset=0&lang=en
             $.ajax({
-                url: giphyQueryURL + "api_key=" + giphyAPIKey + "&q=" + term + "&limit=10&offset="+offset+"&lang=en",//queryURL+term+"&api_key="+apikey+"&limit=10&lang=en&offset=0&rating=Y",
+                url: giphyQueryURL + "api_key=" + giphyAPIKey + "&q=" + term + "&limit=10&offset=" + oset + "&lang=en",
                 method: "GET"
             }).then(function (resp) {
-                console.log(resp["data"]);
-                console.log(resp);
                 for (elements in resp["data"]) {
                     var cardDiv = $("<div>");
                     cardDiv.addClass("card");
@@ -110,14 +107,12 @@ function makeRequest(term) {
                     cardTextHTML = "<b>Rating: </b>" + resp["data"][elements].rating;
                     cardTextHTML += "<br><b>Title: </b>" + resp["data"][elements].title;
                     cardText.html(cardTextHTML);
-                    // console.log(resp["data"][elements]["images"].fixed_width["url"]);
                     var imageToAdd = $("<img>")
                     imageToAdd.attr("src", resp["data"][elements]["images"].fixed_width_still["url"]).attr("data-animated", resp["data"][elements]["images"].fixed_width["url"]).attr("alt", "still image for gif " + resp["data"][elements].title);
                     imageToAdd.addClass("card-img-bottom");
                     var dlButton = $("<button>");
                     dlButton.text("Download");
                     dlButton.attr("id", "dlbutton").addClass("btn btn-outline-secondary");
-
                     cardBody.append(cardText);
                     cardBody.append(imageToAdd);
                     cardDiv.append(cardBody)
@@ -125,16 +120,16 @@ function makeRequest(term) {
                     cardDiv.appendTo($("#results-col"));
                 }
                 var pageButton = $("<button>");
+                pageButton.addClass("btn btn-success btn-lg btn-block");
                 pageButton.text("Next 10");
                 pageButton.attr("id", "nextpage");
-                //Style this button with a class. 
                 pageButton.appendTo("#results-col");
 
             })
             break;
         case "Weather":
-        $("#results-col").empty();
-            console.log(term);
+            $("#results-col").empty();
+
             var weatherArray = [];
             var searchTermDiv = $("<div>");
             searchTermDiv.addClass("card");
@@ -145,8 +140,7 @@ function makeRequest(term) {
                 url: "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&units=metric&q=" + term,
                 method: "GET"
             }).then(function (resp) {
-                console.log(resp["list"]);
-                console.log(resp);
+
                 for (elements in resp["list"]) {
                     var weatherObj = {
                         dateTime: resp["list"][elements].dt_txt,
@@ -154,13 +148,10 @@ function makeRequest(term) {
                         pressure: resp["list"][elements]["main"].pressure,
                         icon: "https://openweathermap.org/img/w/" + resp["list"][elements]["weather"][0].icon + ".png"
                     }
-                    // console.log("WeatherIcon: " + resp["list"][elements]["weather"][0].icon);
+
                     weatherArray.push(weatherObj);
                 }
                 var now = Date();
-                console.log(now);
-                console.log(now.substring(8, 10));
-                console.log(weatherArray[1].dateTime.substring(8, 10));
                 var dateNowNumber = parseInt(now.substring(8, 10));
                 var day1 = [];
                 var day2 = [];
@@ -171,23 +162,16 @@ function makeRequest(term) {
                 for (dates in weatherArray) {
                     var arrayDateNumber = parseInt(weatherArray[dates].dateTime.substring(8, 10));
                     if (dateNowNumber == arrayDateNumber) {
-                        console.log("day 1");
                         day1.push(weatherArray[dates]);
                     } else if (dateNowNumber + 1 == arrayDateNumber) {
-                        console.log("day 2")
                         day2.push(weatherArray[dates]);
                     } else if (dateNowNumber + 2 == arrayDateNumber) {
-                        console.log("day 3")
                         day3.push(weatherArray[dates]);
-
                     } else if (dateNowNumber + 3 == arrayDateNumber) {
-                        console.log("day 4")
                         day4.push(weatherArray[dates]);
                     } else if (dateNowNumber + 4 == arrayDateNumber) {
-                        console.log("day 5")
                         day5.push(weatherArray[dates]);
                     } else if (dateNowNumber + 5 == arrayDateNumber) {
-                        console.log("day 5")
                         day6.push(weatherArray[dates]);
                     } else {
                         console.log("you counted wrong");
@@ -205,7 +189,6 @@ function makeRequest(term) {
                         cardDiv.attr("style", "max-width: 18rem");
                         var cardHeader = $("<div>");
                         cardHeader.addClass("card-header");
-                        console.log(dayArray[DA][0].dateTime.substring(0, 11));
                         cardHeader.html("<b>" + dayArray[DA][0].dateTime.substring(0, 11) + "</b>");
                         cardHeader.appendTo(cardDiv);
                         var tempList = $("<ul>")
@@ -213,7 +196,6 @@ function makeRequest(term) {
                         for (ele in dayArray[DA]) {
                             var listItem = $("<li>")
                             listItem.addClass("list-group-item");
-                            console.log(dayArray[DA][ele].temp)
                             listItem.html("<br>Time: " + dayArray[DA][ele].dateTime.substring(10, 16) + "<br>Temp: " + dayArray[DA][ele].temp + "<br>Pressure: " + dayArray[DA][ele].pressure)
                             listItem.appendTo(tempList);
                             var weatherIcon = $('<img>');
@@ -227,10 +209,9 @@ function makeRequest(term) {
                 }
 
             })
-            console.log(weatherArray);
             break;
         case "OMDB":
-        $("#results-col").empty();
+            $("#results-col").empty();
             var movieResults = [];
             var searchTermDiv = $("<div>");
             searchTermDiv.addClass("card");
@@ -242,11 +223,9 @@ function makeRequest(term) {
                 url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&s=" + term,
                 method: "GET"
             }).then(function (resp) {
-                console.log(resp);
-                console.log(resp["Search"]);
                 for (results in resp["Search"]) {
                     if (resp["Search"][results]["Poster"] == "N/A") {
-                        console.log("No Poster for: " + resp["Search"][results]["Title"]);
+                        //do nothing don't add the card if the poster doesn't exist. 
                     } else {
                         var movieObj = {
                             title: resp["Search"][results]["Title"],
@@ -271,15 +250,11 @@ function makeRequest(term) {
                     cardDiv.append(imageToAdd);
                     cardDiv.appendTo($("#results-col"));
                 }
-
-
             });
             break;
     }
-
 }
 $(".btn-group").on("click", "input", function () {
-    console.log($(this).attr("id"));
     var thisID = $(this).attr("id");
     offset = 0;
     $(this).parent().addClass("active").siblings().removeClass('active');
@@ -311,23 +286,20 @@ $(".btn-group").on("click", "input", function () {
 $("#buttonrow").on("click", "#querybutton", function () {
     queryTerm = $(this).text();
     var queryTermEncoded = encodeURI($(this).text());
-    console.log("On Click of querybutton, queryTerm: " + queryTermEncoded);
     setQueryTerm(queryTerm);
-    makeRequest(queryTermEncoded);
+    makeRequest(queryTermEncoded, 0);
 
 })
-$(".container-fluid").on("click", "#nextpage", function(){
-    console.log("next 10 Pressed");
-    offset+=10;
+$(".container-fluid").on("click", "#nextpage", function () {
+    offset += 10;
     var queryTermEncoded = encodeURI(queryTerm);
-    makeRequest(queryTermEncoded);
+    makeRequest(queryTermEncoded, offset);
     $("#searchtermdiv").remove();
     $(this).remove();
 })
 $("#add-topic").on("click", function (event) {
     event.preventDefault();
     var topic = $("#topic-input").val().trim();
-    console.log("Added Topic: " + topic);
     switch (selectedAPI) {
         case "Giphy":
             topics.push(topic);
@@ -346,42 +318,26 @@ $("#add-topic").on("click", function (event) {
 })
 $(".container-fluid").on("click", ".card-img-bottom", function () {
     if (selectedAPI == "Giphy") {
-        console.log($(this).attr("data-animated"));
         if (!$(this).attr('data-still')) {
-            console.log("not: data-still")
-            console.log("src: " + $(this).attr('src'));
             var stillSrc = $(this).attr('src');
             $(this).attr("data-still", stillSrc);
             $(this).attr("src", $(this).attr('data-animated'));
-
         } else {
-            console.log("else")
-            console.log("data-still: " + $(this).attr('data-still'));
             $(this).attr('src', $(this).attr('data-still'));
-
         }
-        console.log($(this));
     }
 })
 $(".container-fluid").on("click", "#moviecard", function () {
-    console.log("Movie Card");
-    console.log($(this).attr("data-movie"));
     var term = encodeURI($(this).attr("data-movie"));
     var actors;
     var awards;
     var thisCard = $(this)
-    console.log($(this).children()[1]);
-    console.log("poster-showing: " + $(this).attr("data-poster-showing"));
-    
     if ($(this).attr("data-poster-showing") == "true") {
-
         $.ajax({
             url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&t=" + term,
             method: "GET"
         }).then(function (resp) {
-            console.log(resp);
             actors = resp["Actors"];
-            console.log(actors);
             awards = resp["Awards"];
             thisCard.attr("data-movie-info", actors);
             thisCard.attr("data-poster-showing", "false");
@@ -390,12 +346,8 @@ $(".container-fluid").on("click", "#moviecard", function () {
             cardText.addClass("card-text");
             cardText.html("<b>Actors: </b>" + actors + "<br><b>Awards: </b>" + awards);
             thisCard.append(cardText);
-            console.log(thisCard);
-
         })
     } else {
-
-        console.log("my else, that doesnt look like it's being called");
         thisCard.children()[1].remove();
         var imageToAdd = $("<img>");
         imageToAdd.attr("src", thisCard.attr("data-poster"));
@@ -403,23 +355,21 @@ $(".container-fluid").on("click", "#moviecard", function () {
         thisCard.attr("data-poster-showing", "true");
         thisCard.append(imageToAdd);
     }
-
-
-
 })
 $(".container-fluid").on("click", ".btn-outline-secondary", function () {
-    console.log($(this).siblings().attr("data-animated"))
-    downloadFile($(this).siblings().attr("data-animated"));
-
-
-    //
-    //     var link = document.createElement("a");
-    //   link.download = name;
-    //   link.href = uri;
-    //   document.body.appendChild(link);
-    //   link.click();
-    //   document.body.removeChild(link);
-    //   delete link;
-    // }
-
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", $(this).siblings().attr("data-animated"), true);
+    xhr.responseType = "blob";
+    xhr.onload = function () {
+        var urlCreator = window.url || window.URL;
+        var imageUrl = urlCreator.createObjectURL(this.response);
+        var tag = document.createElement('a');
+        tag.download = "giphy.gif";
+        tag.href = imageUrl;
+        tag.target = "_blank";
+        document.body.appendChild(tag);
+        tag.click();
+        document.body.removeChild(tag);
+    }
+    xhr.send();
 })
