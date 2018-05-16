@@ -46,7 +46,7 @@ var cities = [{
     "city": "Milan",
     "country": "IT"
 }];
-
+var favGifs = [];
 
 var giphyAPIKey = "19C8uwZhdiB9aK3J93kbQ6ph99HN1tc4";
 var giphyQueryURL = "https://api.giphy.com/v1/gifs/search?";// + "&api_key=" + giphyAPIKey;
@@ -58,6 +58,22 @@ var offset = 0;
 var omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&";
 
 drawButtons(topics);
+checkForFavourites();
+
+function checkForFavourites() {
+    if ((favGifs.length > 0) && ($(".btn-group").children().length) == 3) {
+        console.log("we have favourites");
+        var favLabel = $("<label class='btn btn-secondary' id='removableFavButton'>");
+        var favInput = $("<input type='radio' name='options' id='Favourites' autocomplete='off'>");
+        var favLabelText = "Favourites";
+        favLabel.append(favInput);
+        favLabel.append(favLabelText);
+        $(".btn-group").append(favLabel);
+    } else if (favGifs.length < 1) {
+        console.log("No favourites here");
+        $("#removableFavButton").remove();
+    }
+}
 
 function drawButtons(array) {
     $("#buttonrow").empty();
@@ -80,6 +96,47 @@ function drawButtons(array) {
 function setQueryTerm(term) {
     queryTerm = term;
 }
+function grabFavs() {
+    var favURL = "https://api.giphy.com/v1/gifs/";
+    for (favs in favGifs) {
+        $.ajax({
+            url: favURL + favGifs[favs] + "?api_key=" + giphyAPIKey,
+            method: "GET"
+        }).then(function (resp) {
+            console.log(resp);
+
+            var cardDiv = $("<div>");
+            cardDiv.addClass("card");
+            cardDiv.attr("style", "max-width: 18rem");
+            var cardBody = $("<div>");
+            cardBody.addClass("card-body").attr("id", "clickToGif").attr("data-animated", resp["data"]["images"].fixed_width["url"]);
+            var cardText = $("<p>");
+            cardText.addClass("card-text");
+            cardTextHTML = "<b>Rating: </b>" + resp["data"].rating;
+            cardTextHTML += "<br><b>Title: </b>" + resp["data"].title;
+            cardText.html(cardTextHTML);
+            var imageToAdd = $("<img>")
+            imageToAdd.attr("src", resp["data"]["images"].fixed_width_still["url"]).attr("data-animated", resp["data"]["images"].fixed_width["url"]).attr("alt", "still image for gif " + resp["data"].title);
+            imageToAdd.addClass("card-img-bottom");
+            var favImg = $("<img src='assets/images/starFull.png'>");
+            favImg.attr("id", "favImg").attr("data-imageID", resp["data"]["id"]);
+            var dlButton = $("<button>");
+            dlButton.text("Download");
+            dlButton.attr("id", "dlbutton").addClass("btn btn-outline-secondary");
+            cardBody.append(cardText);
+            cardBody.append(imageToAdd);
+            cardDiv.append(cardBody)
+            dlButton.appendTo(cardDiv);
+            favImg.appendTo(cardDiv);
+            cardDiv.appendTo($("#results-col"));
+
+        })
+
+    }
+
+
+
+}
 function makeRequest(term, oset) {
     if (oset == 0) {
         $("#results-col").empty();
@@ -96,6 +153,7 @@ function makeRequest(term, oset) {
                 url: giphyQueryURL + "api_key=" + giphyAPIKey + "&q=" + term + "&limit=10&offset=" + oset + "&lang=en",
                 method: "GET"
             }).then(function (resp) {
+                console.log(resp["data"]);
                 for (elements in resp["data"]) {
                     var cardDiv = $("<div>");
                     cardDiv.addClass("card");
@@ -110,6 +168,8 @@ function makeRequest(term, oset) {
                     var imageToAdd = $("<img>")
                     imageToAdd.attr("src", resp["data"][elements]["images"].fixed_width_still["url"]).attr("data-animated", resp["data"][elements]["images"].fixed_width["url"]).attr("alt", "still image for gif " + resp["data"][elements].title);
                     imageToAdd.addClass("card-img-bottom");
+                    var favImg = $("<img src='assets/images/starempty.png'>");
+                    favImg.attr("id", "favImg").attr("data-imageID", resp["data"][elements]["id"]);
                     var dlButton = $("<button>");
                     dlButton.text("Download");
                     dlButton.attr("id", "dlbutton").addClass("btn btn-outline-secondary");
@@ -117,6 +177,7 @@ function makeRequest(term, oset) {
                     cardBody.append(imageToAdd);
                     cardDiv.append(cardBody)
                     dlButton.appendTo(cardDiv);
+                    favImg.appendTo(cardDiv);
                     cardDiv.appendTo($("#results-col"));
                 }
                 var pageButton = $("<button>");
@@ -282,6 +343,13 @@ $(".btn-group").on("click", "input", function () {
         $('#search').css('background-color', '#778899');
         $('#results-col').css('background-color', '#4a6580');
     }
+    if (thisID == "Favourites") {
+        console.log("Favourites Selected");
+        $("#results-col").empty();
+        grabFavs();
+
+
+    }
 })
 $("#buttonrow").on("click", "#querybutton", function () {
     queryTerm = $(this).text();
@@ -373,3 +441,18 @@ $(".container-fluid").on("click", ".btn-outline-secondary", function () {
     }
     xhr.send();
 })
+$(".container-fluid").on("click", "#favImg", function () {
+    console.log("fav clicked");
+    if ($(this).attr("src") == "assets/images/starFull.png") {
+        var indexToRemove = favGifs.indexOf($(this).attr("data-imageID"));
+        favGifs.splice(indexToRemove, 1);
+        $(this).attr("src", "assets/images/starempty.png");
+        checkForFavourites();
+    } else {
+        $(this).attr("src", "assets/images/starFull.png");
+        favGifs.push($(this).attr("data-imageID"));
+        checkForFavourites();
+    }
+
+})
+
