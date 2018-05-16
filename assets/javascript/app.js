@@ -281,7 +281,7 @@ function makeRequest(term, oset) {
             searchTermDiv.prependTo($("#results-col"));
 
             $.ajax({
-                url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&s=" + term,
+                url: omdbQueryURL = "https://www.omdbapi.com/?apikey=8252a0f9&s=" + term,
                 method: "GET"
             }).then(function (resp) {
                 for (results in resp["Search"]) {
