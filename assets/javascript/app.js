@@ -46,7 +46,11 @@ var cities = [{
     "city": "Milan",
     "country": "IT"
 }];
-var favGifs = [];
+var favGifs = JSON.parse(localStorage.getItem("favs"));
+
+if (!Array.isArray(favGifs)) {
+    favGifs = [];
+  }
 
 var giphyAPIKey = "19C8uwZhdiB9aK3J93kbQ6ph99HN1tc4";
 var giphyQueryURL = "https://api.giphy.com/v1/gifs/search?";// + "&api_key=" + giphyAPIKey;
@@ -55,12 +59,19 @@ var weatherAPIKey = "dcfef77b1fe26edc9d499d914dee01c8";
 var weatherQueryURL = "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&q=";
 var selectedAPI = "Giphy";
 var offset = 0;
-var omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&";
+var omdbQueryURL = "https://www.omdbapi.com/?apikey=8252a0f9&";
 
 drawButtons(topics);
 checkForFavourites();
 
 function checkForFavourites() {
+    var storedFavs = JSON.parse(localStorage.getItem("favs"));
+    if (!Array.isArray(storedFavs)) {
+        storedFavs = [];
+    } else {
+        favGifs = storedFavs;
+    }
+
     if ((favGifs.length > 0) && ($(".btn-group").children().length) == 3) {
         console.log("we have favourites");
         var favLabel = $("<label class='btn btn-secondary' id='removableFavButton'>");
@@ -402,7 +413,7 @@ $(".container-fluid").on("click", "#moviecard", function () {
     var thisCard = $(this)
     if ($(this).attr("data-poster-showing") == "true") {
         $.ajax({
-            url: omdbQueryURL = "http://www.omdbapi.com/?apikey=8252a0f9&t=" + term,
+            url: omdbQueryURL = "https://www.omdbapi.com/?apikey=8252a0f9&t=" + term,
             method: "GET"
         }).then(function (resp) {
             actors = resp["Actors"];
@@ -447,10 +458,12 @@ $(".container-fluid").on("click", "#favImg", function () {
         var indexToRemove = favGifs.indexOf($(this).attr("data-imageID"));
         favGifs.splice(indexToRemove, 1);
         $(this).attr("src", "assets/images/starempty.png");
+        localStorage.setItem("favs", JSON.stringify(favGifs));
         checkForFavourites();
     } else {
         $(this).attr("src", "assets/images/starFull.png");
         favGifs.push($(this).attr("data-imageID"));
+        localStorage.setItem("favs", JSON.stringify(favGifs));
         checkForFavourites();
     }
 
