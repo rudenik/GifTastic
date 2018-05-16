@@ -50,10 +50,10 @@ var favGifs = JSON.parse(localStorage.getItem("favs"));
 
 if (!Array.isArray(favGifs)) {
     favGifs = [];
-  }
+}
 
 var giphyAPIKey = "19C8uwZhdiB9aK3J93kbQ6ph99HN1tc4";
-var giphyQueryURL = "https://api.giphy.com/v1/gifs/search?";// + "&api_key=" + giphyAPIKey;
+var giphyQueryURL = "https://api.giphy.com/v1/gifs/search?";
 var queryTerm = "";
 var weatherAPIKey = "dcfef77b1fe26edc9d499d914dee01c8";
 var weatherQueryURL = "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&q=";
@@ -114,8 +114,6 @@ function grabFavs() {
             url: favURL + favGifs[favs] + "?api_key=" + giphyAPIKey,
             method: "GET"
         }).then(function (resp) {
-            console.log(resp);
-
             var cardDiv = $("<div>");
             cardDiv.addClass("card");
             cardDiv.attr("style", "max-width: 18rem");
@@ -159,12 +157,10 @@ function makeRequest(term, oset) {
             searchTermDiv.attr("id", "searchtermdiv");
             searchTermDiv.html("<b>Here are the results for " + queryTerm + " on Giphy</b>");
             searchTermDiv.prependTo($("#results-col"));
-            //Giphy example URL //  https://api.giphy.com/v1/gifs/search?api_key=" + apikey + "&q=" + term + "&limit=10&offset=0&lang=en
             $.ajax({
                 url: giphyQueryURL + "api_key=" + giphyAPIKey + "&q=" + term + "&limit=10&offset=" + oset + "&lang=en",
                 method: "GET"
             }).then(function (resp) {
-                console.log(resp["data"]);
                 for (elements in resp["data"]) {
                     var cardDiv = $("<div>");
                     cardDiv.addClass("card");
@@ -201,7 +197,6 @@ function makeRequest(term, oset) {
             break;
         case "Weather":
             $("#results-col").empty();
-
             var weatherArray = [];
             var searchTermDiv = $("<div>");
             searchTermDiv.addClass("card");
@@ -212,7 +207,6 @@ function makeRequest(term, oset) {
                 url: "https://api.openweathermap.org/data/2.5/forecast?APPID=dcfef77b1fe26edc9d499d914dee01c8&units=metric&q=" + term,
                 method: "GET"
             }).then(function (resp) {
-
                 for (elements in resp["list"]) {
                     var weatherObj = {
                         dateTime: resp["list"][elements].dt_txt,
@@ -220,7 +214,6 @@ function makeRequest(term, oset) {
                         pressure: resp["list"][elements]["main"].pressure,
                         icon: "https://openweathermap.org/img/w/" + resp["list"][elements]["weather"][0].icon + ".png"
                     }
-
                     weatherArray.push(weatherObj);
                 }
                 var now = Date();
@@ -248,9 +241,7 @@ function makeRequest(term, oset) {
                     } else {
                         console.log("you counted wrong");
                     }
-
                 }
-
                 var dayArray = [day1, day2, day3, day4, day5, day6];
                 for (DA in dayArray) {
                     if (dayArray[DA].length == 0) {
@@ -276,10 +267,8 @@ function makeRequest(term, oset) {
                         }
                         tempList.appendTo(cardDiv);
                         cardDiv.appendTo($("#results-col"));
-
                     }
                 }
-
             })
             break;
         case "OMDB":
@@ -290,7 +279,6 @@ function makeRequest(term, oset) {
             searchTermDiv.attr("id", "searchtermdiv");
             searchTermDiv.html("<b>Here are the results for " + queryTerm + " on OMDB</b>");
             searchTermDiv.prependTo($("#results-col"));
-
             $.ajax({
                 url: omdbQueryURL = "https://www.omdbapi.com/?apikey=8252a0f9&s=" + term,
                 method: "GET"
@@ -306,7 +294,6 @@ function makeRequest(term, oset) {
                         }
                         movieResults.push(movieObj);
                     }
-
                 }
                 for (posMov in movieResults) {
                     var cardDiv = $("<div>");
@@ -355,13 +342,11 @@ $(".btn-group").on("click", "input", function () {
         $('#results-col').css('background-color', '#4a6580');
     }
     if (thisID == "Favourites") {
-        console.log("Favourites Selected");
         $("#results-col").empty();
         grabFavs();
-
-
     }
 })
+
 $("#buttonrow").on("click", "#querybutton", function () {
     queryTerm = $(this).text();
     var queryTermEncoded = encodeURI($(this).text());
@@ -369,6 +354,7 @@ $("#buttonrow").on("click", "#querybutton", function () {
     makeRequest(queryTermEncoded, 0);
 
 })
+
 $(".container-fluid").on("click", "#nextpage", function () {
     offset += 10;
     var queryTermEncoded = encodeURI(queryTerm);
@@ -376,6 +362,7 @@ $(".container-fluid").on("click", "#nextpage", function () {
     $("#searchtermdiv").remove();
     $(this).remove();
 })
+
 $("#add-topic").on("click", function (event) {
     event.preventDefault();
     var topic = $("#topic-input").val().trim();
@@ -392,9 +379,9 @@ $("#add-topic").on("click", function (event) {
             drawButtons(cities);
             break;
     }
-
     $("#topic-input").val("");
 })
+
 $(".container-fluid").on("click", ".card-img-bottom", function () {
     if (selectedAPI == "Giphy") {
         if (!$(this).attr('data-still')) {
@@ -406,6 +393,7 @@ $(".container-fluid").on("click", ".card-img-bottom", function () {
         }
     }
 })
+
 $(".container-fluid").on("click", "#moviecard", function () {
     var term = encodeURI($(this).attr("data-movie"));
     var actors;
@@ -435,6 +423,7 @@ $(".container-fluid").on("click", "#moviecard", function () {
         thisCard.append(imageToAdd);
     }
 })
+
 $(".container-fluid").on("click", ".btn-outline-secondary", function () {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", $(this).siblings().attr("data-animated"), true);
@@ -452,8 +441,8 @@ $(".container-fluid").on("click", ".btn-outline-secondary", function () {
     }
     xhr.send();
 })
+
 $(".container-fluid").on("click", "#favImg", function () {
-    console.log("fav clicked");
     if ($(this).attr("src") == "assets/images/starFull.png") {
         var indexToRemove = favGifs.indexOf($(this).attr("data-imageID"));
         favGifs.splice(indexToRemove, 1);
@@ -466,6 +455,5 @@ $(".container-fluid").on("click", "#favImg", function () {
         localStorage.setItem("favs", JSON.stringify(favGifs));
         checkForFavourites();
     }
-
 })
 
