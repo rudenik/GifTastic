@@ -343,6 +343,10 @@ $(".btn-group").on("click", "input", function () {
     }
     if (thisID == "Favourites") {
         $("#results-col").empty();
+        $('body').css('background-color', '#778899');
+        $('#buttonrow').css('background-color', '#778899');
+        $('#search').css('background-color', '#778899');
+        $('#results-col').css('background-color', '#4a6580');
         grabFavs();
     }
 })
